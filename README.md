@@ -2,6 +2,38 @@
 SDFrame是一款简单易用、易扩展、高性能的轻量级单文件单入口php框架。
 
 ## 快速开始
+### web服务器配置
+以nginx为例，推荐nginx部分配置举例
+```
+server {
+    listen       80;
+    server_name  localhost;
+    root   /Users/snowin/git/sdframe/public;
+    index  index.html index.htm index.php;
+    charset utf-8;
+
+    location / {
+        if (!-e $request_filename) {
+            rewrite ^/(.*)$ /index.php/$1 last;
+            break;
+        }
+    }
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    location ~ .*\.php($|/) {
+       fastcgi_pass   127.0.0.1:9000;
+       fastcgi_index  index.php;
+
+       include                          fastcgi_params;
+       fastcgi_split_path_info          ^(.+\.php)(/.+)$;
+       fastcgi_param    PATH_INFO       $fastcgi_path_info;
+       fastcgi_param    PATH_TRANSLATED $document_root$fastcgi_path_info;
+       fastcgi_param    SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}
+```
+
 ### 目录结构
 ```
 .
