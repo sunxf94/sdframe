@@ -1,3 +1,5 @@
+[toc]
+
 # simple development framework
 SDFrame是一款简单易用、易扩展、高性能的轻量级单文件单入口php框架。
 
