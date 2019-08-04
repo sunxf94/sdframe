@@ -6,6 +6,7 @@ define('SDF_HOME_PATH', __dir__);
 
 // TODO 增加DI
 // TODO 单元测试
+//  try_files
 
 /**
  * DB方法，返回数据库Medoo实例，方便使用db
