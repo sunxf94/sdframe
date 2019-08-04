@@ -79,6 +79,7 @@ class Index extends \Controller{
 
 ## SDFrame methods
 SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如下表所示
+
 |方法名|方法类型|方法参数|方法作用|备注|
 |:---|:---|:---|:---|:---|
 |instance|静态||获取应用实例||
