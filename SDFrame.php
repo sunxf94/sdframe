@@ -196,7 +196,7 @@ class SDFrame {
      * @param $viewPath string
      * @param $layoutPath string (if we need)
      */
-    public function setTemplate($viewPath, $layoutPath = '') {
+    final public function setTemplate($viewPath, $layoutPath = '') {
         if (!$viewPath) {
             throw new \Exception('invalid template dir');
         }
@@ -204,7 +204,7 @@ class SDFrame {
         $this->_layoutPath = $layoutPath;
     }
 
-    public function assign($key, $value) {
+    final public function assign($key, $value) {
         if (!$key) {
             throw new \Exception('invalid key');
         }
