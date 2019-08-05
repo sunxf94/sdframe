@@ -1,12 +1,24 @@
 <?php
 
-define('SDF_HOME_PATH', __dir__);
+!defined('SDF_HOME_PATH') && define('SDF_HOME_PATH', __dir__);
 // define('APP_PATH', SDF_HOME_PATH.DIRECTORY_SEPARATOR.'app');
 
 
 // TODO 增加DI
+// 使用App方法获取SDFrame实例 全部方法放在SDFrame中
+
+
 // TODO 单元测试
-//  try_files
+// try_files
+// 设置 app view目录
+
+
+/**
+ * 获取SDFrame实例
+ */
+function SDF() {
+    return SDFrame::instance();
+}
 
 /**
  * DB方法，返回数据库Medoo实例，方便使用db
@@ -92,9 +104,14 @@ class SDFrame {
      */
     private $_layoutPath = '';
 
+    // TODO 如何获取 以下变量
     private $_module = '';
     private $_controller = '';
     private $_action = '';
+
+    private $_paramsGet = [];
+    private $_paramsPost = [];
+    private $_paramsRow = [];
 
     /**
      * 保存页面需要的变量
@@ -119,6 +136,7 @@ class SDFrame {
 
         $this->_autoload();
         $this->_loadConfig();
+        $this->_getRequest();
     }
 
     public function run() {
@@ -156,20 +174,15 @@ class SDFrame {
             $this->_message('function not found');
         }
 
-        $initParams = [
-            'module' => $module,
-            'controller' => $controller,
-            'action' => $action,
-        ];
-
         try {
-            $classInstance->init($initParams);
-
-            $resp = false;
-            if ($classInstance->before()) {
-                $resp = $classInstance->$action();
+            // before中遇到异常case 请抛异常或者返回false
+            if (method_exists($classInstance, 'before') && $classInstance->before() === false) {
+                throw new \Exception('invalid access!');
             }
-            $classInstance->after();
+
+            $resp = $classInstance->$action();
+
+            method_exists($classInstance, 'after') && $classInstance->after();
 
             $this->_response($resp);
         } catch (\Exception $e) {
@@ -192,6 +205,8 @@ class SDFrame {
 
     /**
      * set the path of the view
+     * TODO 多个模版 如何加载
+     * TODO 默认模版为layout
      *
      * @param $viewPath string
      * @param $layoutPath string (if we need)
@@ -211,6 +226,39 @@ class SDFrame {
 
         $this->_vars[$key] = $value;
     }
+
+    final public function getParam($key = '', $defaultValue = '') {
+        if (!$key) {
+            return $this->_paramsGet;
+        }
+
+        return isset($this->_paramsGet[$key]) ? $this->_paramsGet[$key] : $defaultValue;
+    }
+
+    final public function postParam($key = '', $defaultValue = '') {
+        if (!$key) {
+            return $this->_paramsPost;
+        }
+
+        return isset($this->_paramsPost[$key]) ? $this->_paramsPost[$key] : $defaultValue;
+    }
+
+    final public function rawParam($key = '', $defaultValue = '') {
+        if (!$key) {
+            return $this->_paramsRow;
+        }
+
+        return isset($this->_paramsRow[$key]) ? $this->_paramsRow[$key] : $defaultValue;
+    }
+
+    final public function isPost() {
+        return strtolower($_SERVER['REQUEST_METHOD']) == 'post' ? true : false;
+    }
+
+    final public function isGet() {
+        return strtolower($_SERVER['REQUEST_METHOD']) == 'get' ? true : false;
+    }
+
 
     private function _response($data, $errorNo = self::ERROR_CODE_SUCCESS, $errorMsg = 'success') {
 
@@ -283,76 +331,13 @@ class SDFrame {
             return;
         });
     }
-}
 
-class Controller {
-
-    private $_paramsGet = [];
-    private $_paramsPost = [];
-    private $_paramsRow = [];
-
-    protected $module = '';
-    protected $controller = '';
-    protected $action = '';
-
-    public function __construct() {
+    private function _getRequest() {
         $this->_paramsGet = $_GET;
         $this->_paramsPost = $_POST;
 
         $input = file_get_contents('php://input');
         $this->_paramsRow = json_decode($input, true);
     }
-
-    final public function init(array $request) {
-        $this->module = $request['module'];
-        $this->controller = $request['controller'];
-        $this->action = $request['action'];
-    }
-
-    final protected function getParam($key = '', $defaultValue = '') {
-        if (!$key) {
-            return $this->_paramsGet;
-        }
-
-        return isset($this->_paramsGet[$key]) ? $this->_paramsGet[$key] : $defaultValue;
-    }
-
-    final protected function postParam($key = '', $defaultValue = '') {
-        if (!$key) {
-            return $this->_paramsPost;
-        }
-
-        return isset($this->_paramsPost[$key]) ? $this->_paramsPost[$key] : $defaultValue;
-    }
-
-    final protected function rawParam($key = '', $defaultValue = '') {
-        if (!$key) {
-            return $this->_paramsRow;
-        }
-
-        return isset($this->_paramsRow[$key]) ? $this->_paramsRow[$key] : $defaultValue;
-    }
-
-    // TODO 多个模版 如何加载
-    final protected function setTemplate($templateDir, $layoutDir = 'layout') {
-        \SDFrame::instance()->setTemplate($templateDir, $layoutDir);
-    }
-
-    final protected function assign($key, $value) {
-        \SDFrame::instance()->assign($key, $value);
-    }
-
-    final protected function isPost() {
-        return strtolower($_SERVER['REQUEST_METHOD']) == 'post' ? true : false;
-    }
-
-    final protected function isGet() {
-        return strtolower($_SERVER['REQUEST_METHOD']) == 'get' ? true : false;
-    }
-
-    public function before() {
-        return true;
-    }
-    public function after() {}
 }
 
