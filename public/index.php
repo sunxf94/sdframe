@@ -3,5 +3,5 @@
 // 加载框架文件
 include dirname(__DIR__) . DIRECTORY_SEPARATOR . 'SDFrame.php';
 
-SDFrame::instance()->run();
+SDF()->run();
 
