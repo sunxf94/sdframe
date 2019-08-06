@@ -80,8 +80,7 @@ class Index extends \Controller{
 ```
 
 ## 全局方法
-SDFrmae框架包含一个全局方法，SDF()
-SDF() 用于获取class SDFrame的实例，实际底层调用的class SDFrame的单例方法
+SDFrmae框架包含一个全局方法SDF() ，SDF方法用于获取class SDFrame的实例，实际底层调用的class SDFrame的单例方法
 
 ## Class SDFrame methods
 SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如下表所示
