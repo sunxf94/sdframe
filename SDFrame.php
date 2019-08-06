@@ -110,8 +110,13 @@ class SDFrame {
     private $_action = '';
 
     private $_paramsGet = [];
-    private $_paramsPost = [];
-    private $_paramsRow = [];
+    private $_paramsWithForm = [];
+    private $_paramsWithoutForm = [];
+
+    /**
+     * 保存配置文件信息
+     */
+    private $_config = [];
 
     /**
      * 保存页面需要的变量
@@ -235,20 +240,32 @@ class SDFrame {
         return isset($this->_paramsGet[$key]) ? $this->_paramsGet[$key] : $defaultValue;
     }
 
+    /**
+     * 获取php中 $_POST包含的数据
+     * 包含Content-Type是application/x-www-form-urlencoded或multipart/form-data的数据
+     *
+     * @doc https://www.php.net/manual/zh/reserved.variables.post.php
+     */
     final public function postParam($key = '', $defaultValue = '') {
         if (!$key) {
-            return $this->_paramsPost;
+            return $this->_paramsWithForm;
         }
 
-        return isset($this->_paramsPost[$key]) ? $this->_paramsPost[$key] : $defaultValue;
+        return isset($this->_paramsWithForm[$key]) ? $this->_paramsWithForm[$key] : $defaultValue;
     }
 
-    final public function rawParam($key = '', $defaultValue = '') {
+    /**
+     * 获取php中请求的原始数据流php://input的数据
+     * 不包含Content-Type是multipart/form-data的数据
+     *
+     * @doc https://www.php.net/manual/zh/wrappers.php.php
+     */
+    final public function inputParam($key = '', $defaultValue = '') {
         if (!$key) {
-            return $this->_paramsRow;
+            return $this->_paramsWithoutForm;
         }
 
-        return isset($this->_paramsRow[$key]) ? $this->_paramsRow[$key] : $defaultValue;
+        return isset($this->_paramsWithoutForm[$key]) ? $this->_paramsWithoutForm[$key] : $defaultValue;
     }
 
     final public function isPost() {
@@ -257,6 +274,33 @@ class SDFrame {
 
     final public function isGet() {
         return strtolower($_SERVER['REQUEST_METHOD']) == 'get' ? true : false;
+    }
+
+    final public function setConfig($path) {
+        if (!$path || !file_exists(SDF_HOME_PATH.DIRECTORY_SEPARATOR.$path)) {
+            throw new \Exception('invalid path');
+        }
+        $this->_config = require(SDF_HOME_PATH.DIRECTORY_SEPARATOR.$path);
+
+        return $this;
+    }
+
+    final public function getConfig($key) {
+        if (!$key) {
+            return $this->_config;
+        }
+        $keys = explode('.', $key);
+
+        $keyConfig = $this->_config;
+        foreach($keys as $k) {
+            if (!isset($keyConfig[$k])) {
+                throw new \Exception("config of {$k} not found!");
+            }
+
+            $keyConfig = $keyConfig[$k];
+        }
+
+        return $keyConfig;
     }
 
 
@@ -334,10 +378,10 @@ class SDFrame {
 
     private function _getRequest() {
         $this->_paramsGet = $_GET;
-        $this->_paramsPost = $_POST;
+        $this->_paramsWithForm = $_POST;
 
         $input = file_get_contents('php://input');
-        $this->_paramsRow = json_decode($input, true);
+        $this->_paramsWithoutForm = json_decode($input, true);
     }
 }
 
