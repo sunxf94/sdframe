@@ -10,7 +10,6 @@
 
 // TODO 单元测试
 // try_files
-// 设置 app view目录
 
 
 /**
@@ -123,8 +122,9 @@ class SDFrame {
      */
     private $_vars = [];
 
-    const CONTROLLER_NAME = 'controller';
-    const MODULES_FOLDER_NAME = 'app';
+    private $_module_folder_name = 'app';
+    private $_view_folder_name = 'view';
+    private $_controller_folder_name = 'controller';
 
     const ERROR_CODE_SUCCESS = 0;
     const ERROR_CODE_FAIL = 10000;
@@ -169,7 +169,7 @@ class SDFrame {
         $this->_action = $action;
 
         $className = ucfirst($controller);
-        $classNameWithNamespace = '\\'.self::MODULES_FOLDER_NAME."\\{$module}\\".self::CONTROLLER_NAME."\\{$className}";
+        $classNameWithNamespace = '\\'.$this->$_module_folder_name."\\{$module}\\".$this->_controller_folder_name."\\{$className}";
         if (!class_exists($classNameWithNamespace)) {
             $this->_message('class not found, className: '.$className);
         }
@@ -303,6 +303,32 @@ class SDFrame {
         return $keyConfig;
     }
 
+    final public function setModuleFolderName($moduleName) {
+        if (!$moduleName) {
+            throw new \Exception('invalid module folder name');
+        }
+        $this->_module_folder_name = $moduleName;
+
+        return $this;
+    }
+
+    final public function setViewFolderName($viewName) {
+        if (!$viewName) {
+            throw new \Exception('invalid view folder name');
+        }
+        $this->_view_folder_name = $viewName;
+
+        return $this;
+    }
+
+    final public function setControllerFolderName($controllerName) {
+        if (!$controllerName) {
+            throw new \Exception('invalid controller folder name');
+        }
+        $this->_controller_folder_name = $controllerName;
+
+        return $this;
+    }
 
     private function _response($data, $errorNo = self::ERROR_CODE_SUCCESS, $errorMsg = 'success') {
 
@@ -338,13 +364,13 @@ class SDFrame {
         echo $output; exit;
     }
 
-    private function _getViewPath($viewPath, $viewFolderName = 'view', $ext = 'html') {
+    private function _getViewPath($viewPath, $ext = 'html') {
 
         if (!$viewPath) {
             throw new \Exception('invalid view dir');
         }
 
-        $viewPathArr = [SDF_HOME_PATH, self::MODULES_FOLDER_NAME, $this->_module, $viewFolderName, $viewPath];
+        $viewPathArr = [SDF_HOME_PATH, $this->_module_folder_name, $this->_module, $this->_view_folder_name, $viewPath];
 
         return implode(DIRECTORY_SEPARATOR, $viewPathArr).".{$ext}";
     }

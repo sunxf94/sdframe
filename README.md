@@ -1,7 +1,12 @@
 # simple development framework
 SDFrame是一款简单易用、易扩展、高性能的轻量级单文件单入口php框架。
 
+## 特点
+- api数目少
+- 学习成本低
+
 ## 快速开始
+将SDFrame.php文件放在工程的根目录下
 ### php版本
 任何大于7的php版本都可以运行SDFrame
 ### web服务器配置
@@ -80,7 +85,7 @@ class Index extends \Controller{
 ```
 
 ## 全局方法
-SDFrmae框架包含一个全局方法SDF() ，SDF方法用于获取class SDFrame的实例，实际底层调用的class SDFrame的单例方法
+SDFrmae框架包含一个全局方法SDF()，SDF方法用于获取class SDFrame的实例，实际底层调用的class SDFrame的单例方法
 
 ## Class SDFrame methods
 SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如下表所示
@@ -96,6 +101,9 @@ SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如�
 |inputParam|非静态|key: 变量名字符串|获取输入流php://input的数据|参数可以为空|
 |setConfig|非静态|path: 配置文件相对SDFrame.php文件的相对路径|设置配置文件信息|例如: config/Config.php|
 |getConfig|非静态|key: 配置文件中的key|获取全部/部分配置文件信息|key支持多级，传入“.”分割的字符串|
+|setModuleFolderName|非静态|moduleName: module文件夹的名字|设置模块所在文件夹的名字|默认名字为app|
+|setViewFolderName|非静态|viewName: view文件夹的名字|设置模块所在文件夹的名字|默认名字为view，view文件夹一定要在具体的模块下|
+|setControllerFolderName|非静态|controller: 控制器所在文件夹名字|设置控制器所在文件夹的名字|默认名字为controller，controller文件夹一定要在具体模块下|
 
 ## 命名空间必须与相对路径一致
 框架会根据命名空间来加载文件，因此我们可以自由的组织文件结构，不受框架限制
@@ -105,3 +113,4 @@ SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如�
 
 ## controller不需要任何基类
 controller不需要继承任何框架提供的基类（如果需要自己的积累，请自便）。同时框架会检查controller中是否存在before和after方法，以便用户添加事前善后的处理逻辑。
+
