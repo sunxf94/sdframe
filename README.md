@@ -105,6 +105,7 @@ SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如�
 |setViewFolderName|非静态|viewName: view文件夹的名字|设置模块所在文件夹的名字|默认名字为view，view文件夹一定要在具体的模块下|
 |setControllerFolderName|非静态|controller: 控制器所在文件夹名字|设置控制器所在文件夹的名字|默认名字为controller，controller文件夹一定要在具体模块下|
 
+
 ## 命名空间必须与相对路径一致
 框架会根据命名空间来加载文件，因此我们可以自由的组织文件结构，不受框架限制
 
@@ -114,3 +115,25 @@ SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如�
 ## controller不需要任何基类
 controller不需要继承任何框架提供的基类（如果需要自己的积累，请自便）。同时框架会检查controller中是否存在before和after方法，以便用户添加事前善后的处理逻辑。
 
+## 输出json串
+在controller中function中return即可输出json，json的格式需要自己定义。
+例如：
+
+```php
+<?php
+
+namespace app\api\controller
+
+class Index {
+    public function index() {
+        $data = ['count' => 10];
+        $res = [
+            'errno' => 0,
+            'errmsg' => 'success',
+            'data' => $data,
+        ];
+
+        return json_encode($res);
+    }
+}
+```

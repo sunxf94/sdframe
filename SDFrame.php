@@ -6,6 +6,7 @@
 
 // TODO 增加DI
 // 使用App方法获取SDFrame实例 全部方法放在SDFrame中
+// 增加json返回接口控制（或者去掉返回）
 
 
 // TODO 单元测试
@@ -169,7 +170,7 @@ class SDFrame {
         $this->_action = $action;
 
         $className = ucfirst($controller);
-        $classNameWithNamespace = '\\'.$this->$_module_folder_name."\\{$module}\\".$this->_controller_folder_name."\\{$className}";
+        $classNameWithNamespace = '\\'.$this->_module_folder_name."\\{$module}\\".$this->_controller_folder_name."\\{$className}";
         if (!class_exists($classNameWithNamespace)) {
             $this->_message('class not found, className: '.$className);
         }
@@ -285,7 +286,7 @@ class SDFrame {
         return $this;
     }
 
-    final public function getConfig($key) {
+    final public function getConfig($key = '') {
         if (!$key) {
             return $this->_config;
         }
@@ -330,9 +331,8 @@ class SDFrame {
         return $this;
     }
 
-    private function _response($data, $errorNo = self::ERROR_CODE_SUCCESS, $errorMsg = 'success') {
+    private function _response($output, $errorNo = self::ERROR_CODE_SUCCESS, $errorMsg = 'success') {
 
-        $output = '';
         if ($this->_viewPath) {
             ob_start();
 
@@ -350,15 +350,6 @@ class SDFrame {
             }
 
             $output = ob_get_clean();
-        } else {
-            // TODO 可以自定义
-            $resp = array(
-                'errorNo' => $errorNo,
-                'errorMsg' => $errorMsg,
-                'data' => $data,
-            );
-
-            $output = json_encode($resp, JSON_UNESCAPED_UNICODE);
         }
 
         echo $output; exit;
