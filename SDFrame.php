@@ -6,7 +6,6 @@
 
 // TODO 增加DI
 // 使用App方法获取SDFrame实例 全部方法放在SDFrame中
-// 增加json返回接口控制（或者去掉返回）
 
 
 // TODO 单元测试
@@ -19,73 +18,6 @@
 function SDF() {
     return SDFrame::instance();
 }
-
-/**
- * DB方法，返回数据库Medoo实例，方便使用db
- *
- * @param array|string $options 如果为string，则是键值
- * @return Medoo
- */
-function DB($options = [])
-{
-    // 作用域为此方法 但是当再次调用此方法时，值并不丢失
-    static $_instance = [];
-
-    if (empty($options)) {
-        return $_instance;
-    }
-
-    if (!is_array($options)) {
-        throw new \Exception('options for DB must be an array');
-    }
-
-    $defaultFields = ['host', 'username', 'password', 'dbname'];
-    foreach ($defaultFields as $field) {
-        if (!isset($options[$field])) {
-            throw new \Exception("options.{$field} not found!");
-        }
-    }
-
-    $conf = [];
-    $conf['server'] = $options['host'];
-    $conf['username'] = $options['username'];
-    $conf['password'] = $options['password'];
-    $conf['database_name'] = $options['dbname'];
-    $conf['port'] = isset($options['port']) ? $options['port'] : '3306';
-    $conf['prefix'] = isset($options['prefix']) ? $options['prefix'] : '';
-    $conf['charset'] = isset($options['charset']) ? $options['charset'] : 'utf8mb4';
-    $conf['database_type'] = 'mysql';
-    $conf['logging'] = true;
-    $_instance = new \core\lib\Medoo($conf);
-
-    return $_instance;
-}
-
-/**
- * 设置或获取配置项
- */
-function Config($key = '') {
-    static $_config = [];
-
-    if (is_array($key)) {
-        $_config = array_merge($_config, $key);
-        return;
-    }
-    $keys = explode('.', $key);
-
-    $keyConfig = $_config;
-    foreach($keys as $k) {
-        if (!isset($keyConfig[$k])) {
-            throw new \Exception("config of {$k} not found!");
-        }
-
-        $keyConfig = $keyConfig[$k];
-    }
-
-    return $keyConfig;
-
-}
-
 
 class SDFrame {
 
@@ -126,6 +58,11 @@ class SDFrame {
     private $_module_folder_name = 'app';
     private $_view_folder_name = 'view';
     private $_controller_folder_name = 'controller';
+
+    /**
+     * 容器 管理开发者自定义组件
+     */
+    private $_di = [];
 
     const ERROR_CODE_SUCCESS = 0;
     const ERROR_CODE_FAIL = 10000;
@@ -329,6 +266,23 @@ class SDFrame {
         $this->_controller_folder_name = $controllerName;
 
         return $this;
+    }
+
+    final public function set($name, $instance) {
+        if (!$name || !$instance) {
+            throw new \Exception('invalid di setting');
+        }
+        $this->_di[$name] = $instance;
+
+        return $this;
+    }
+
+    final public function __get($name) {
+        if (!$name) {
+            throw new \Exception('invalid name getting');
+        }
+
+        return $this->_di[$name];
     }
 
     private function _response($output, $errorNo = self::ERROR_CODE_SUCCESS, $errorMsg = 'success') {

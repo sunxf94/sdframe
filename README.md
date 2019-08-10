@@ -104,6 +104,8 @@ SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如�
 |setModuleFolderName|非静态|moduleName: module文件夹的名字|设置模块所在文件夹的名字|默认名字为app|
 |setViewFolderName|非静态|viewName: view文件夹的名字|设置模块所在文件夹的名字|默认名字为view，view文件夹一定要在具体的模块下|
 |setControllerFolderName|非静态|controller: 控制器所在文件夹名字|设置控制器所在文件夹的名字|默认名字为controller，controller文件夹一定要在具体模块下|
+|set|非静态|name: 自定义组件的名字，instance: 自定义组件的实例|将自定义组件放入容器中|组件实例可以使用匿名函数|
+|__get|非静态|name: 自定义组件的名字|从容器中获取组件||
 
 
 ## 命名空间必须与相对路径一致
