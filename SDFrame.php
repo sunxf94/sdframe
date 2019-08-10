@@ -4,8 +4,10 @@
  * SDFrame为一款轻量级的单文件框架 请将SDFrame.php放在应用跟目录下
  */
 
-!defined('SDF_HOME_PATH') && define('SDF_HOME_PATH', __dir__);
-// define('APP_PATH', SDF_HOME_PATH.DIRECTORY_SEPARATOR.'app');
+/**
+ * 支持配置应用根目录 默认为SDFrame.php所在目录
+ */
+!defined('SDF_ROOT_PATH') && define('SDF_ROOT_PATH', __dir__);
 
 // TODO 单元测试
 // try_files
@@ -235,10 +237,10 @@ class SDFrame {
      * @param $path string 配置文件相对于应用根目录的路径
      */
     final public function setConfig($path) {
-        if (!$path || !file_exists(SDF_HOME_PATH.DIRECTORY_SEPARATOR.$path)) {
+        if (!$path || !file_exists(SDF_ROOT_PATH.DIRECTORY_SEPARATOR.$path)) {
             throw new \Exception('invalid path');
         }
-        $this->_config = require(SDF_HOME_PATH.DIRECTORY_SEPARATOR.$path);
+        $this->_config = require(SDF_ROOT_PATH.DIRECTORY_SEPARATOR.$path);
 
         return $this;
     }
@@ -383,7 +385,7 @@ class SDFrame {
             throw new \Exception('invalid view dir');
         }
 
-        $viewPathArr = [SDF_HOME_PATH, $this->_module_folder_name, $this->_module, $this->_view_folder_name, $viewPath];
+        $viewPathArr = [SDF_ROOT_PATH, $this->_module_folder_name, $this->_module, $this->_view_folder_name, $viewPath];
 
         return implode(DIRECTORY_SEPARATOR, $viewPathArr).".{$ext}";
     }
@@ -396,7 +398,7 @@ class SDFrame {
     private function _autoload() {
         spl_autoload_register(function ($className) {
 
-            $filename = SDF_HOME_PATH.DIRECTORY_SEPARATOR.$className.'.php';
+            $filename = SDF_ROOT_PATH.DIRECTORY_SEPARATOR.$className.'.php';
             $filename = str_replace('\\', '/', $filename);
             if (file_exists($filename)) {
                 require_once $filename;

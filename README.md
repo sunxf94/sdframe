@@ -138,3 +138,12 @@ class Index {
     }
 }
 ```
+
+## 修改SDFrame.php文件的位置
+SDFrame框架默认SDFrame.php所在目录为网站根目录。如果需要修改SDFrame.php文件所在目录，需在引导文件中定义网站根目录的位置
+
+```php
+define('SDF_ROOT_PATH', '/home/product/yourapp');
+```
+支持相对路径或者绝对路径
+
