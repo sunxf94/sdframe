@@ -1,15 +1,15 @@
 <?php
 
+/**
+ * SDFrame为一款轻量级的单文件框架 请将SDFrame.php放在应用跟目录下
+ */
+
 !defined('SDF_HOME_PATH') && define('SDF_HOME_PATH', __dir__);
 // define('APP_PATH', SDF_HOME_PATH.DIRECTORY_SEPARATOR.'app');
 
-
-// TODO 增加DI
-// 使用App方法获取SDFrame实例 全部方法放在SDFrame中
-
-
 // TODO 单元测试
 // try_files
+// 测试 require 是否支持相对目录 如果支持则使用应用根目录配置
 
 
 /**
@@ -36,11 +36,18 @@ class SDFrame {
      */
     private $_layoutPath = '';
 
-    // TODO 如何获取 以下变量
+    /**
+     * 访问的路由信息
+     * www.example.com/admin/user/login
+     * www.example.com/{$_module}/{$_controller}/{$_action}
+     */
     private $_module = '';
     private $_controller = '';
     private $_action = '';
 
+    /**
+     * 请求参数信息
+     */
     private $_paramsGet = [];
     private $_paramsWithForm = [];
     private $_paramsWithoutForm = [];
@@ -55,6 +62,9 @@ class SDFrame {
      */
     private $_vars = [];
 
+    /**
+     * 应用文件夹信息配置存储
+     */
     private $_module_folder_name = 'app';
     private $_view_folder_name = 'view';
     private $_controller_folder_name = 'controller';
@@ -64,9 +74,9 @@ class SDFrame {
      */
     private $_di = [];
 
-    const ERROR_CODE_SUCCESS = 0;
-    const ERROR_CODE_FAIL = 10000;
-
+    /**
+     * 单例
+     */
     public static function instance() {
         if (!self::$_instance) {
             self::$_instance = new self();
@@ -77,14 +87,17 @@ class SDFrame {
 
     public function __construct() {
 
-        $this->_autoload();
-        $this->_loadConfig();
-        $this->_getRequest();
+        $this->_autoload();     // 注册自动加载函数
+        $this->_getRequest();   // 获取请求参数备用
     }
 
-    public function run() {
-        // remove after ? for getting module, controller and action
-        $requestURI = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
+    /**
+     * 启动应用
+     */
+    final public function run() {
+        // remove all after ? for getting module, controller and action
+        // 去掉问号后的参数 保证获取到准确的module、controller 和 action
+        $requestURI = preg_replace('|\?.*$|', '', $_SERVER['REQUEST_URI']);
 
         $module = 'web';
         $controller = 'index';
@@ -117,33 +130,16 @@ class SDFrame {
             $this->_message('function not found');
         }
 
-        try {
-            // before中遇到异常case 请抛异常或者返回false
-            if (method_exists($classInstance, 'before') && $classInstance->before() === false) {
-                throw new \Exception('invalid access!');
-            }
-
-            $resp = $classInstance->$action();
-
-            method_exists($classInstance, 'after') && $classInstance->after();
-
-            $this->_response($resp);
-        } catch (\Exception $e) {
-            $errorNo = $e->getCode() ? $e->getCode() : self::ERROR_CODE_FAIL;
-            $errorMsg = $e->getMessage() ? $e->getMessage() : '系统错误';
-
-            $this->_response('', $errorNo, $errorMsg);
-        }
-    }
-
-    public function setDB(array $options) {
-        if (empty($options)) {
-            throw new \Exception('options is empty');
+        // before中遇到异常case请抛异常或者返回false
+        if (method_exists($classInstance, 'before') && $classInstance->before() === false) {
+            throw new \Exception('invalid access!');
         }
 
-        DB($options);
+        $resp = $classInstance->$action();
 
-        return $this;
+        method_exists($classInstance, 'after') && $classInstance->after();
+
+        $this->_response($resp);
     }
 
     /**
@@ -162,6 +158,12 @@ class SDFrame {
         $this->_layoutPath = $layoutPath;
     }
 
+    /**
+     * 设置模版变量
+     *
+     * @param $key string 模版中变量的名字
+     * @param $value mix 模版中变量的值
+     */
     final public function assign($key, $value) {
         if (!$key) {
             throw new \Exception('invalid key');
@@ -170,6 +172,9 @@ class SDFrame {
         $this->_vars[$key] = $value;
     }
 
+    /**
+     * 获取$_GET 中的参数
+     */
     final public function getParam($key = '', $defaultValue = '') {
         if (!$key) {
             return $this->_paramsGet;
@@ -206,14 +211,29 @@ class SDFrame {
         return isset($this->_paramsWithoutForm[$key]) ? $this->_paramsWithoutForm[$key] : $defaultValue;
     }
 
+    /**
+     * 判断http method是否是POST
+     *
+     * @return bool
+     */
     final public function isPost() {
         return strtolower($_SERVER['REQUEST_METHOD']) == 'post' ? true : false;
     }
 
+    /**
+     * 判断http method是否是GET
+     *
+     * @return bool
+     */
     final public function isGet() {
         return strtolower($_SERVER['REQUEST_METHOD']) == 'get' ? true : false;
     }
 
+    /**
+     * 设置配置文件
+     *
+     * @param $path string 配置文件相对于应用根目录的路径
+     */
     final public function setConfig($path) {
         if (!$path || !file_exists(SDF_HOME_PATH.DIRECTORY_SEPARATOR.$path)) {
             throw new \Exception('invalid path');
@@ -223,6 +243,12 @@ class SDFrame {
         return $this;
     }
 
+    /**
+     * 获取配置文件
+     *
+     * @param $key string 配置文件的key 支持多级 例如: sdframe.df.master.dbname
+     * @return array|mix 当key为空时 返回整个配置
+     */
     final public function getConfig($key = '') {
         if (!$key) {
             return $this->_config;
@@ -241,6 +267,9 @@ class SDFrame {
         return $keyConfig;
     }
 
+    /**
+     * 设置模块文件夹的名字
+     */
     final public function setModuleFolderName($moduleName) {
         if (!$moduleName) {
             throw new \Exception('invalid module folder name');
@@ -250,6 +279,10 @@ class SDFrame {
         return $this;
     }
 
+    /**
+     * TODO 可以支持第二个参数 支持自定义view文件夹位置
+     * 设置模版文件夹的名字
+     */
     final public function setViewFolderName($viewName) {
         if (!$viewName) {
             throw new \Exception('invalid view folder name');
@@ -259,6 +292,9 @@ class SDFrame {
         return $this;
     }
 
+    /**
+     * 设置控制器文件夹的名字
+     */
     final public function setControllerFolderName($controllerName) {
         if (!$controllerName) {
             throw new \Exception('invalid controller folder name');
@@ -268,6 +304,12 @@ class SDFrame {
         return $this;
     }
 
+    /**
+     * 增加用户自定义组件到容器
+     *
+     * @param $name string 自定义组件名字
+     * @param $instance 组件实例
+     */
     final public function set($name, $instance) {
         if (!$name || !$instance) {
             throw new \Exception('invalid di setting');
@@ -277,6 +319,11 @@ class SDFrame {
         return $this;
     }
 
+    /**
+     * 通过用户设置的组件名字获取自定义组件
+     *
+     * @param $name string 自定义组件名字
+     */
     final public function __get($name) {
         if (!$name) {
             throw new \Exception('invalid name getting');
@@ -285,7 +332,28 @@ class SDFrame {
         return $this->_di[$name];
     }
 
-    private function _response($output, $errorNo = self::ERROR_CODE_SUCCESS, $errorMsg = 'success') {
+    /**
+     * 获取请求url中模块的名字
+     */
+    final public function getModuleName() {
+        return $this->_module;
+    }
+
+    /**
+     * 获取请求url中控制器的名字
+     */
+    final public function getControllerName() {
+        return $this->_controller;
+    }
+
+    /**
+     * 获取请求url中方法的名字
+     */
+    final public function getActionName() {
+        return $this->_action;
+    }
+
+    private function _response($output) {
 
         if ($this->_viewPath) {
             ob_start();
@@ -323,15 +391,6 @@ class SDFrame {
     private function _message($msg) {
         echo '[404 NOT FOUND !] message: '.$msg.PHP_EOL;
         exit;
-    }
-
-    private function _loadConfig() {
-        $configName = SDF_HOME_PATH.DIRECTORY_SEPARATOR.'config/common.php';
-        if (file_exists($configName)) {
-            $config = require($configName);
-
-            Config($config);
-        }
     }
 
     private function _autoload() {
