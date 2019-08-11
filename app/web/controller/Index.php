@@ -9,7 +9,7 @@ class Index {
         $param = SDF()->getParam();
         $config = SDF()->getConfig();
 
-        $result = 'SDFrame Start! ';
+        $result = 'SDFrame Start! get param: '.json_encode($param);
 
         return $result;
     }

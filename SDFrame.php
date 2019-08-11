@@ -3,16 +3,11 @@
 /**
  * SDFrame为一款轻量级的单文件框架
  * 默认请将SDFrame.php放在应用跟目录下，如需放在其他目录，请配置系统根目录
- * define('SDF_ROOT_PATH', /your_app_path);
+ * define('$this->_sdf_root_path', /your_app_path);
  *
  * @author sunxuefeng sunxf94@gmail.com
  * @github github.com/sunxf94/sdframe
  */
-
-/**
- * 支持配置应用根目录 默认为SDFrame.php所在目录
- */
-!defined('SDF_ROOT_PATH') && define('SDF_ROOT_PATH', __dir__);
 
 // TODO 单元测试
 
@@ -21,8 +16,8 @@
 /**
  * 获取SDFrame实例
  */
-function SDF() {
-    return SDFrame::instance();
+function SDF($sdfRootPath = __DIR__) {
+    return SDFrame::instance($sdfRootPath);
 }
 
 class SDFrame {
@@ -80,18 +75,24 @@ class SDFrame {
      */
     private $_di = [];
 
+    private $_sdf_root_path = __dir__;
+
     /**
      * 单例
      */
-    public static function instance() {
+    public static function instance($sdfRootPath = __DIR__) {
         if (!self::$_instance) {
-            self::$_instance = new self();
+            self::$_instance = new self($sdfRootPath);
         }
 
         return self::$_instance;
     }
 
-    public function __construct() {
+    /**
+     * @param $sdfRootPath string 系统根目录
+     */
+    public function __construct($sdfRootPath) {
+        $this->_sdf_root_path = $sdfRootPath;
 
         $this->_autoload();     // 注册自动加载函数
         $this->_getRequest();   // 获取请求参数备用
@@ -241,10 +242,10 @@ class SDFrame {
      * @param $path string 配置文件相对于应用根目录的路径
      */
     final public function setConfig($path) {
-        if (!$path || !file_exists(SDF_ROOT_PATH.DIRECTORY_SEPARATOR.$path)) {
+        if (!$path || !file_exists($this->_sdf_root_path.DIRECTORY_SEPARATOR.$path)) {
             throw new \Exception('invalid path');
         }
-        $this->_config = require(SDF_ROOT_PATH.DIRECTORY_SEPARATOR.$path);
+        $this->_config = require($this->_sdf_root_path.DIRECTORY_SEPARATOR.$path);
 
         return $this;
     }
@@ -389,7 +390,7 @@ class SDFrame {
             throw new \Exception('invalid view dir');
         }
 
-        $viewPathArr = [SDF_ROOT_PATH, $this->_module_folder_name, $this->_module, $this->_view_folder_name, $viewPath];
+        $viewPathArr = [$this->_sdf_root_path, $this->_module_folder_name, $this->_module, $this->_view_folder_name, $viewPath];
 
         return implode(DIRECTORY_SEPARATOR, $viewPathArr).".{$ext}";
     }
@@ -402,7 +403,7 @@ class SDFrame {
     private function _autoload() {
         spl_autoload_register(function ($className) {
 
-            $filename = SDF_ROOT_PATH.DIRECTORY_SEPARATOR.$className.'.php';
+            $filename = $this->_sdf_root_path.DIRECTORY_SEPARATOR.$className.'.php';
             $filename = str_replace('\\', '/', $filename);
             if (file_exists($filename)) {
                 require_once $filename;
