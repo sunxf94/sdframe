@@ -1,7 +1,12 @@
 <?php
 
 /**
- * SDFrame为一款轻量级的单文件框架 请将SDFrame.php放在应用跟目录下
+ * SDFrame为一款轻量级的单文件框架
+ * 默认请将SDFrame.php放在应用跟目录下，如需放在其他目录，请配置系统根目录
+ * define('SDF_ROOT_PATH', /your_app_path);
+ *
+ * @author sunxuefeng sunxf94@gmail.com
+ * @github github.com/sunxf94/sdframe
  */
 
 /**
@@ -10,8 +15,7 @@
 !defined('SDF_ROOT_PATH') && define('SDF_ROOT_PATH', __dir__);
 
 // TODO 单元测试
-// try_files
-// 测试 require 是否支持相对目录 如果支持则使用应用根目录配置
+
 
 
 /**

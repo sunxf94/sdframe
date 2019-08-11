@@ -10,20 +10,17 @@ SDFrame是一款简单易用、易扩展、高性能的轻量级单文件单入�
 ### php版本
 任何大于7的php版本都可以运行SDFrame
 ### web服务器配置
-以nginx为例，推荐nginx部分配置举例
+以nginx为例，推荐nginx部分配置举例。注意修改root值为代码所在目录
 ```
 server {
     listen       80;
     server_name  localhost;
-    root   /Users/snowin/git/sdframe/public;
+    root   /your_code_path/sdframe/public;
     index  index.html index.htm index.php;
     charset utf-8;
 
     location / {
-        if (!-e $request_filename) {
-            rewrite ^/(.*)$ /index.php/$1 last;
-            break;
-        }
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
     # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
@@ -146,4 +143,5 @@ SDFrame框架默认SDFrame.php所在目录为网站根目录。如果需要修�
 define('SDF_ROOT_PATH', '/home/product/yourapp');
 ```
 支持相对路径或者绝对路径
+
 
