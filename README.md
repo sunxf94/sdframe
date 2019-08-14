@@ -1,8 +1,10 @@
 # simple development framework
 SDFrame是一款简单易用、易扩展、高性能的轻量级单文件单入口php框架。
+SDFrame支持在同一个域名下管理多端代码，通过不同的路由来区分应用。
 
 ## 特点
 - 学习成本低
+- 单域名支持多端代码
 
 ## 快速开始
 将SDFrame.php文件放在工程的根目录下。
