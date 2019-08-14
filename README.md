@@ -80,6 +80,22 @@ SDFrame Welcome You！
 SDFrame Start! get param:[]
 ```
 
+## 解析路由
+SDFrame使用基于url的path的三段路由解析。例如：
+
+```
+localhost/wap/user/login
+```
+
+SDFrame会解析出域名后三段路由，依次对应为
+
+```php
+$module = 'wap';
+$controller = 'user';
+$action = 'login';
+```
+SDFrame会加载app目录中的wap目录下的User.php文件，实例化class User并调用login方法。
+
 
 ## 全局方法
 SDFrmae框架包含一个全局方法SDF()，SDF方法用于获取class SDFrame的实例，实际底层调用的class SDFrame的instance方法。
