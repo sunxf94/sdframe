@@ -1,45 +1,21 @@
-# simple development framework
-SDFrame是一款简单易用、易扩展、高性能的轻量级单文件单入口php框架。
-SDFrame支持在同一个域名下管理多端代码，通过不同的路由来区分应用。
+# Simple Development Framework
+SDFrame是一款易上手、易扩展、高性能的轻量级单文件的php框架。
 
 ## 特点
+- 单文件php开发
 - 学习成本低
 - 单域名支持多端代码
+- 命名空间需要与文件的相对路径一致
 
 ## 快速开始
 将SDFrame.php文件放在工程的根目录下。
+
 ### php版本
 php版本 >= 7.0。
-### web服务器推荐配置
-以nginx为例，推荐nginx部分配置; 注意修改root值为代码所在目录。
-```
-server {
-    listen       80;
-    server_name  localhost;
-    root   /your_code_path/sdframe/public;
-    index  index.html index.htm index.php;
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    location ~ .*\.php($|/) {
-       fastcgi_pass   127.0.0.1:9000;
-       fastcgi_index  index.php;
-
-       include                          fastcgi_params;
-       fastcgi_split_path_info          ^(.+\.php)(/.+)$;
-       fastcgi_param    PATH_INFO       $fastcgi_path_info;
-       fastcgi_param    PATH_TRANSLATED $document_root$fastcgi_path_info;
-       fastcgi_param    SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }
-}
-```
 
 ### 目录结构
+clone或者download代码，推荐目录结构如下：
+
 ```
 .
 ├── SDFrame.php
@@ -50,9 +26,19 @@ server {
 └── public
     └── index.php
 ```
-- 配置web服务器（如nginx）指向public/index.php目录。
+- 配置web服务器（如nginx）指向public/index.php目录（引导文件）。
 - app目录下面保存着不同的站点，如wap站、api接口，web站等模块。
-- SDFrame.php文件为框架文件，放在系统根目录下。如果需要修改，请关注[修改SDFrame.php文件的位置](#sdf_pos)一章节。
+- SDFrame.php文件为框架文件，放在系统根目录下。如果需要修改，请关注章节[修改SDFrame.php文件的位置](#sdf_pos)。
+
+
+
+### web服务器推荐配置
+以nginx为例，推荐nginx部分配置，将请求统一转发到index.php处理。
+```
+location / {
+    try_files $uri $uri/ /index.php?$query_string;  # 没有?$query_string会导致获取不到GET参数
+}
+```
 
 ### 引导文件index.php 内容
 在引导文件中加载SDFrame.php 文件并执行核心类的run方法即可启动框架。
@@ -61,29 +47,33 @@ include dirname(__DIR__) . DIRECTORY_SEPARATOR . 'SDFrame.php';
 
 SDF()->run();   // SDF()为全局方法，方便获取class SDFrame的实例
 ```
-### Index.php 内容
+### 控制器中的内容
 ```php
 <?php
 
-// 命名空间要与路径一致
+// 命名空间要与文件相对应用根目录的路径一致，否则无法自动加载文件
 namespace app\web\controller;
 
 class Index {
 
     public function index() {
+        // 直接return即可输出内容到浏览器
         return 'SDFrame Start! get param: '.json_encode($param);
     }
 }
 ```
-### 访问localhost
-SDFrame Welcome You！
+
+### 查看结果
+打开浏览器，在地址栏访问localhost。
 
 ```text
 SDFrame Start! get param:[]
 ```
 
-## 解析路由
-SDFrame使用基于url的path的三段路由解析。例如：
+SDFrame带你飞！
+
+## 路由解析规则
+SDFrame使用基于url中path的三段路由解析。例如：
 
 ```
 localhost/wap/user/login
@@ -96,8 +86,10 @@ $module = 'wap';
 $controller = 'user';
 $action = 'login';
 ```
+
 SDFrame会加载app目录中的wap目录下的User.php文件，实例化class User并调用login方法。
 
+注：SDFrame解析时，对路由的大小写不敏感，获取三段路由后一律转为小写；在实例化class时会将类的开头字母转为大写。
 
 ## 全局方法
 SDFrmae框架包含一个全局方法SDF()，SDF方法用于获取class SDFrame的实例，实际底层调用的class SDFrame的instance方法。

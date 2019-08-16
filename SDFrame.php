@@ -10,6 +10,7 @@
  */
 
 // TODO 单元测试
+// 默认的module controller action改为可配置。考虑使用方法还是使用配置文件
 
 
 /**
@@ -41,9 +42,9 @@ class SDFrame {
      * www.example.com/admin/user/login
      * www.example.com/{$_module}/{$_controller}/{$_action}
      */
-    private $_module = '';
-    private $_controller = '';
-    private $_action = '';
+    private $_module = 'web';
+    private $_controller = 'index';
+    private $_action = 'index';
 
     /**
      * 请求参数信息
@@ -105,34 +106,29 @@ class SDFrame {
         // 去掉问号后的参数 保证获取到准确的module、controller 和 action
         $requestURI = preg_replace('|\?.*$|', '', $_SERVER['REQUEST_URI']);
 
-        $module = 'web';
-        $controller = 'index';
-        $action = 'index';
         if ($requestURI) {
             $requestURIArr = explode('/', $requestURI);
+
+            // requestURI 的第一个字符一定是/，explode后第一个元素一定是空
             if (!empty($requestURIArr[1])) {
-                $module = $requestURIArr[1];
+                $this->_module = strtolower($requestURIArr[1]);
             }
             if (!empty($requestURIArr[2])) {
-                $controller = $requestURIArr[2];
+                $this->_controller = strtolower($requestURIArr[2]);
             }
             if (!empty($requestURIArr[3])) {
-                $action = $requestURIArr[3];
+                $this->_action = strtolower($requestURIArr[3]);
             }
         }
 
-        $this->_module = $module;
-        $this->_controller = $controller;
-        $this->_action = $action;
-
-        $className = ucfirst($controller);
-        $classNameWithNamespace = '\\'.$this->_module_folder_name."\\{$module}\\".$this->_controller_folder_name."\\{$className}";
+        $className = ucfirst($this->_controller);
+        $classNameWithNamespace = '\\'.$this->_module_folder_name."\\{$this->_module}\\".$this->_controller_folder_name."\\{$className}";
         if (!class_exists($classNameWithNamespace)) {
             $this->_message('class not found, className: '.$className);
         }
 
         $classInstance = new $classNameWithNamespace();
-        if (!method_exists($classInstance, $action)) {
+        if (!method_exists($classInstance, $this->_action)) {
             $this->_message('function not found');
         }
 
@@ -141,7 +137,7 @@ class SDFrame {
             throw new \Exception('invalid access!');
         }
 
-        $resp = $classInstance->$action();
+        $resp = $classInstance->{$this->_action}();
 
         method_exists($classInstance, 'after') && $classInstance->after();
 
