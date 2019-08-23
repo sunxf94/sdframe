@@ -3,7 +3,7 @@
 /**
  * SDFrame为一款轻量级的单文件框架
  * 默认请将SDFrame.php放在应用跟目录下，如需放在其他目录，请配置系统根目录
- * define('$this->_sdf_root_path', /your_app_path);
+ * SDF($sdfRootPath)->run();
  *
  * @author sunxuefeng sunxf94@gmail.com
  * @github github.com/sunxf94/sdframe
@@ -11,6 +11,7 @@
 
 // TODO 单元测试
 // 默认的module controller action改为可配置。考虑使用方法还是使用配置文件
+// 命令行模式 增加cmd readme composer psr标准
 
 
 /**
@@ -78,6 +79,12 @@ class SDFrame {
     private $_sdf_root_path = __dir__;
 
     /**
+     * 是否启动命令行模式
+     * 决定了路由的解析规则 默认不启动
+     */
+    private $_consoleMode = true;
+
+    /**
      * 单例
      */
     public static function instance($sdfRootPath = __DIR__) {
@@ -96,35 +103,18 @@ class SDFrame {
 
         $this->_autoload();     // 注册自动加载函数
         $this->_getRequest();   // 获取请求参数备用
+        $this->_getRoute();     // 解析路由
     }
 
     /**
      * 启动应用
      */
     final public function run() {
-        // remove all after ? for getting module, controller and action
-        // 去掉问号后的参数 保证获取到准确的module、controller 和 action
-        $requestURI = preg_replace('|\?.*$|', '', $_SERVER['REQUEST_URI']);
-
-        if ($requestURI) {
-            $requestURIArr = explode('/', $requestURI);
-
-            // requestURI 的第一个字符一定是/，explode后第一个元素一定是空
-            if (!empty($requestURIArr[1])) {
-                $this->_module = strtolower($requestURIArr[1]);
-            }
-            if (!empty($requestURIArr[2])) {
-                $this->_controller = strtolower($requestURIArr[2]);
-            }
-            if (!empty($requestURIArr[3])) {
-                $this->_action = strtolower($requestURIArr[3]);
-            }
-        }
 
         $className = ucfirst($this->_controller);
         $classNameWithNamespace = '\\'.$this->_module_folder_name."\\{$this->_module}\\".$this->_controller_folder_name."\\{$className}";
         if (!class_exists($classNameWithNamespace)) {
-            $this->_message('class not found, className: '.$className);
+            $this->_message('class not found, className: '.$classNameWithNamespace);
         }
 
         $classInstance = new $classNameWithNamespace();
@@ -211,6 +201,14 @@ class SDFrame {
         }
 
         return isset($this->_paramsWithoutForm[$key]) ? $this->_paramsWithoutForm[$key] : $defaultValue;
+    }
+
+
+    final public function consoleParam($key = '', $defaultValue = '') {
+        if (!$key) {
+            return $this->_paramsConsole;
+        }
+        return isset($this->_paramsConsole[$key]) ? $this->_paramsConsole[$key] : $defaultValue;
     }
 
     /**
@@ -414,6 +412,51 @@ class SDFrame {
 
         $input = file_get_contents('php://input');
         $this->_paramsWithoutForm = json_decode($input, true);
+        if ($this->_consoleMode) {
+            // $_SERVER['argv'] 第一位固定是脚本名字 之后的三位对应 module controller action
+            // 所以从第5位开始
+            $this->_paramsConsole = array_slice($_SERVER['argv'], 4);
+        }
+    }
+
+    private function _getRoute() {
+        if ($this->_consoleMode) {
+            // TODO 控制台程序的文件夹名字可修改
+            $this->setControllerFolderName('console');
+            $params = $_SERVER['argv'];
+            if (empty($params[1])) {
+                throw new \Exception('module is invalid');
+            }
+            if (empty($params[2])) {
+                throw new \Exception('controller is invalid');
+            }
+            if (empty($params[3])) {
+                throw new \Exception('action is invalid');
+            }
+            $this->_module = $params[1];
+            $this->_controller = $params[2];
+            $this->_action = $params[3];
+
+            return;
+        }
+        // remove all after ? for getting module, controller and action
+        // 去掉问号后的参数 保证获取到准确的module、controller 和 action
+        $requestURI = preg_replace('|\?.*$|', '', $_SERVER['REQUEST_URI']);
+
+        if ($requestURI) {
+            $requestURIArr = explode('/', $requestURI);
+
+            // requestURI 的第一个字符一定是/，explode后第一个元素一定是空
+            if (!empty($requestURIArr[1])) {
+                $this->_module = strtolower($requestURIArr[1]);
+            }
+            if (!empty($requestURIArr[2])) {
+                $this->_controller = strtolower($requestURIArr[2]);
+            }
+            if (!empty($requestURIArr[3])) {
+                $this->_action = strtolower($requestURIArr[3]);
+            }
+        }
     }
 }
 
