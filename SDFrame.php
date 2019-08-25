@@ -82,7 +82,7 @@ class SDFrame {
      * 是否启动命令行模式
      * 决定了路由的解析规则 默认不启动
      */
-    private $_consoleMode = true;
+    private $_consoleMode = false;
 
     /**
      * 单例
@@ -351,6 +351,12 @@ class SDFrame {
      */
     final public function getActionName() {
         return $this->_action;
+    }
+
+    final public function setConsoleMode($setter) {
+        $this->_consoleMode = $setter;
+
+        return $this;
     }
 
     private function _response($output) {

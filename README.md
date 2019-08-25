@@ -116,7 +116,7 @@ SDFrame秉承简洁易用的原则，暴露尽量少的方法。全部接口如�
 |getModuleName|非静态||获取模块名字||
 |getConrollerName|非静态||获取控制器名字||
 |getActionName|非静态||获取控制器中方法的名字||
-
+|consoleParam|非静态|key: 变量名字符串|获取命令行程序的参数|参数为空时返回全部数据|
 ## 命名空间必须与相对路径一致
 框架会根据命名空间来加载文件，所以类的命名空间一定要与文件相对于应用根目录的路径一致，可以参考快速开始中的例子。
 因此，我们可以最大限度的自由组织文件结构，这种方式还会最大程度的减少自动加载的IO开销。
@@ -159,4 +159,26 @@ SDF(dirname(__DIR__))->run();
 ## 设置带布局文件的模版文件
 通过SDFrame提供的 setTemplate 方法，可以加载需要的模版文件。当此方法被调用的时候，如果设置的目录不为空，SDFrame就忽略路由返回的数据，转而输出模版文件内容。
 
+## 控制台程序
+控制台程序也有单独的入口，类似于web应用的index.php文件。区别在于需要通过setConsoleMode 启动控制台模式
+
+```php
+<?php
+
+// 加载框架文件
+include dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'SDFrame.php';
+
+SDF()->setConfig('config/Config.php')
+    ->setConsoleMode(true)
+    ->run();
+
+```
+
+启动后路由的规则与前面提到的一致，在命令行通过统一的入口启动脚本，前三段参数表示路由地址，从第四个参数开始表示此脚本需要的参数，由用户定义。
+
+```bash
+php /yourpath/sdframe/app/web/console/cmd.php web user index
+```
+
+### 在控制器中获取命令行参数
 
