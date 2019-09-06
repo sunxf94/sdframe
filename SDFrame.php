@@ -12,6 +12,7 @@
 // TODO 单元测试
 // 默认的module controller action改为可配置。考虑使用方法还是使用配置文件
 // 命令行模式 增加cmd readme composer psr标准
+// readme 增加：方便迁移
 
 
 /**
@@ -314,6 +315,11 @@ class SDFrame {
         if (!$name || !$instance) {
             throw new \Exception('invalid di setting');
         }
+
+        if ($instance instanceof Closure) {
+            $instance = $instance();
+        }
+
         $this->_di[$name] = $instance;
 
         return $this;
