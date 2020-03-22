@@ -2,8 +2,9 @@
 
 // 加载框架文件
 include dirname(__DIR__) . DIRECTORY_SEPARATOR . 'SDFrame.php';
-
-SDF()->setConfig('config/Config.php')
+$env = get_cfg_var('sdframe') ? get_cfg_var('sdframe') : 'config';
+$configPath = "config/{$env}.php";
+SDF()->setConfig($configPath)
     ->set('db', function() {
         $options = SDF()->getConfig('db');
         $conf = [];
