@@ -2,7 +2,7 @@
 
 /**
  * SDFrame为一款轻量级的单文件框架
- * 默认请将SDFrame.php放在应用跟目录下，如需放在其他目录，请配置系统根目录
+ * 默认请将SDFrame.php放在应用根目录下，如需放在其他目录，请配置系统根目录
  * SDF($sdfRootPath)->run();
  *
  * @author sunxuefeng sunxf94@gmail.com
@@ -102,6 +102,11 @@ class SDFrame {
     public function __construct($sdfRootPath) {
         $this->_sdf_root_path = $sdfRootPath;
 
+        // 全局异常捕捉
+        set_exception_handler(function ($e) {
+            $this->_message($e->getMessage());
+        });
+
         $this->_autoload();     // 注册自动加载函数
         $this->_getRequest();   // 获取请求参数备用
         $this->_getRoute();     // 解析路由
@@ -123,14 +128,20 @@ class SDFrame {
             $this->_message('function not found');
         }
 
-        // before中遇到异常case请抛异常或者返回false
-        if (method_exists($classInstance, 'before') && $classInstance->before() === false) {
-            throw new \Exception('invalid access!');
+        // before中遇到异常case请抛异常
+        $resp = '';
+        try {
+            if (method_exists($classInstance, 'before')) {
+                $classInstance->before();
+            }
+
+            $resp = $classInstance->{$this->_action}();
+            $resp = $classInstance->after($resp, new \Exception('success'));
+        } catch (\Exception $e) {
+            if (method_exists($classInstance, 'after')) {
+                $resp = $classInstance->after($resp, $e);
+            }
         }
-
-        $resp = $classInstance->{$this->_action}();
-
-        method_exists($classInstance, 'after') && $classInstance->after();
 
         $this->_response($resp);
     }
@@ -365,6 +376,10 @@ class SDFrame {
         return $this;
     }
 
+    final public function getRootPath() {
+        return $this->_sdf_root_path;
+    }
+
     private function _response($output) {
 
         if ($this->_viewPath) {
@@ -375,7 +390,7 @@ class SDFrame {
             $content = $this->_getViewPath($this->_viewPath);
 
             if ($this->_layoutPath) {
-                $layout = $this->_getViewPath('layout');
+                $layout = $this->_getViewPath($this->_layoutPath);
 
                 // layout template will use _viewPath, too
                 include $layout;

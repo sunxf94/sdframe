@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Talk</title>
+  </head>
+  <body>
+    <table>
+      <tbody>
+        <tr>
+          <td>Talk</td>
+          <td><a href=#>登录</a></td>
+          <td><a href=#>注册</a></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <?php foreach($list as $item): ?>
+        <tr>
+          <td><?= $item['content'] ?></td>
+          <!-- <td><a href=#>回复</a></td> -->
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+    <form>
+      <textarea class="content" rows="3" cols="20" name="content" placeholder="不能超过200个字符哟！" required="required" ></textarea>
+    </form>
+    <button class="btn-talk" type="submit" >回复</button>
+    <p class="t-sub"></p>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="/js/jquery-3.3.1.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(".btn-talk").on("click", function() {
+        var content = $(".content").val();
+        if (content == "") {
+          $(".t-sub").html("内容不能为空！");
+          return;
+        }
+        $.ajax({
+          type: "POST",
+          url: "/web/talk/add",
+          data: {content: content},
+          dataType: "json",
+          success: function(res) {
+            if (res.errorNo != 0) {
+                $(".t-sub").html("提交失败，请稍后再试！");
+                return;
+            }
+            window.location.href = "/web/index/index";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

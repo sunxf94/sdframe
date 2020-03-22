@@ -17,7 +17,7 @@ SDF()->setConfig('config/Config.php')
         $conf['database_type'] = 'mysql';
         $conf['logging'] = true;
 
-        return new \core\lib\Medoo($conf);
+        return new \libs\Medoo($conf);
     })
     ->run();
 
