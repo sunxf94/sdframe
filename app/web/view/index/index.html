@@ -26,7 +26,9 @@
       <tbody>
         <?php foreach($list as $item): ?>
         <tr>
+          <td><?= $item['from_name'] ?>对<?= $item['to_name'] ?>说：</td>
           <td><?= $item['content'] ?></td>
+          <td><?php echo date('Y-m-d H:i:s', $item['up_time']); ?></td>
           <!-- <td><a href=#>回复</a></td> -->
         </tr>
         <?php endforeach; ?>
