@@ -38,6 +38,7 @@
       <textarea class="content" rows="3" cols="20" name="content" placeholder="不能超过200个字符哟！" required="required" ></textarea>
     </form>
     <button class="btn-talk" type="submit" >回复</button>
+    <button class="btn-rand-food" type="submit" >吃饭</button>
     <p class="t-sub"></p>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -63,6 +64,23 @@
           }
         });
       });
+
+      $(".btn-rand-food").on("click", function() {
+        $.ajax({
+          type: "POST",
+          url: "/web/talk/randFood",
+          dataType: "json",
+          success: function(res) {
+            if (res.errorNo != 0) {
+                $(".t-sub").html("获取失败，请稍后再试！");
+                return;
+            }
+
+            $(".t-sub").html(res.data);
+          }
+        });
+      });
+
     </script>
   </body>
 </html>

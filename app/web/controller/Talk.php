@@ -14,4 +14,14 @@ class Talk extends Base {
 
         return TalkService::add($content);
     }
+
+    public function randFood() {
+        $foods = [
+            '麻辣烫',
+            '小龙虾',
+        ];
+        $index = rand(0, count($foods) - 1);
+
+        return $foods[$index];
+    }
 }
