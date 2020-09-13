@@ -4,7 +4,7 @@ ini_set('date.timezone','Asia/Shanghai');
 
 // 加载框架文件
 include dirname(__DIR__) . DIRECTORY_SEPARATOR . 'SDFrame.php';
-$env = get_cfg_var('sdframe') ? get_cfg_var('sdframe') : 'config';
+$env = get_cfg_var('sdframe.env') ? get_cfg_var('sdframe.env') : 'config';
 $configPath = "config/{$env}.php";
 SDF()->setConfig($configPath)
     ->set('db', function() {
