@@ -1,7 +1,5 @@
 <?php
 
-namespace libs;
-
 /*!
  * Medoo database framework
  * https://medoo.in
@@ -16,7 +14,7 @@ class Raw
     public $value;
 }
 
-class Medoo
+class Lib_Medoo
 {
     public $pdo;
     protected $type;
