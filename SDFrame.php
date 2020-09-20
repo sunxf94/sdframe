@@ -49,6 +49,11 @@ class SDFrame {
     private $_action = 'index';
 
     /**
+     * action 调用方法名称
+     */
+    private $_action_call_func = 'call';
+
+    /**
      * 请求参数信息
      */
     private $_paramsGet = [];
@@ -117,31 +122,17 @@ class SDFrame {
      */
     final public function run() {
 
-        $className = ucfirst($this->_controller);
-        $classNameWithNamespace = '\\'.$this->_module_folder_name."\\{$this->_module}\\".$this->_controller_folder_name."\\{$className}";
-        if (!class_exists($classNameWithNamespace)) {
-            $this->_message('class not found, className: '.$classNameWithNamespace);
+        $className = sprintf('%s_%s_%s', 'Action', ucfirst($this->_controller), ucfirst($this->_action));
+        if (!class_exists($className)) {
+            $this->_message('class not found, className: '.$className);
         }
 
-        $classInstance = new $classNameWithNamespace();
-        if (!method_exists($classInstance, $this->_action)) {
+        $classInstance = new $className();
+        if (!method_exists($classInstance, $this->_action_call_func)) {
             $this->_message('function not found');
         }
 
-        // before中遇到异常case请抛异常
-        $resp = '';
-        try {
-            if (method_exists($classInstance, 'before')) {
-                $classInstance->before();
-            }
-
-            $resp = $classInstance->{$this->_action}();
-            $resp = $classInstance->after($resp, new \Exception('success'));
-        } catch (\Exception $e) {
-            if (method_exists($classInstance, 'after')) {
-                $resp = $classInstance->after($resp, $e);
-            }
-        }
+        $resp = $classInstance->{$this->_action_call_func}();
 
         $this->_response($resp);
     }
@@ -221,6 +212,24 @@ class SDFrame {
             return $this->_paramsConsole;
         }
         return isset($this->_paramsConsole[$key]) ? $this->_paramsConsole[$key] : $defaultValue;
+    }
+
+    public function requestParams() {
+        $get = $this->getParam();
+        $post = $this->postParam();
+        $input = $this->inputParam();
+        $params = [];
+        if ($get) {
+            $params = array_merge($params, $get);
+        }
+        if ($post) {
+            $params = array_merge($params, $post);
+        }
+        if ($input) {
+            $params = array_merge($params, $input);
+        }
+
+        return $params;
     }
 
     /**
@@ -422,14 +431,35 @@ class SDFrame {
 
     private function _autoload() {
         spl_autoload_register(function ($className) {
-
-            $filename = $this->_sdf_root_path.DIRECTORY_SEPARATOR.$className.'.php';
-            $filename = str_replace('\\', '/', $filename);
-            if (file_exists($filename)) {
-                require_once $filename;
+            $pathArr = explode('_', $className);
+            $filename = '';
+            foreach ($pathArr as $path) {
+                $filename .= (DIRECTORY_SEPARATOR.$path);
             }
 
-            return;
+            $appFilename = sprintf('%s%s%s%s%s%s%s',
+                $this->_sdf_root_path,
+                DIRECTORY_SEPARATOR,
+                'app',
+                DIRECTORY_SEPARATOR,
+                $this->_module,
+                $filename,
+                '.php'
+            );
+            if (file_exists($appFilename)) {
+                return require_once $appFilename;
+            }
+
+            $rootFilename = sprintf('%s%s%s',
+                $this->_sdf_root_path,
+                $filename,
+                '.php'
+            );
+            if (file_exists($rootFilename)) {
+                return require_once $rootFilename;
+            }
+
+            return false;
         });
     }
 
@@ -447,25 +477,25 @@ class SDFrame {
     }
 
     private function _getRoute() {
-        if ($this->_consoleMode) {
-            // TODO 控制台程序的文件夹名字可修改
-            $this->setControllerFolderName('console');
-            $params = $_SERVER['argv'];
-            if (empty($params[1])) {
-                throw new \Exception('module is invalid');
-            }
-            if (empty($params[2])) {
-                throw new \Exception('controller is invalid');
-            }
-            if (empty($params[3])) {
-                throw new \Exception('action is invalid');
-            }
-            $this->_module = $params[1];
-            $this->_controller = $params[2];
-            $this->_action = $params[3];
+/*         if ($this->_consoleMode) { */
+            // // TODO 控制台程序的文件夹名字可修改
+            // $this->setControllerFolderName('console');
+            // $params = $_SERVER['argv'];
+            // if (empty($params[1])) {
+                // throw new \Exception('module is invalid');
+            // }
+            // if (empty($params[2])) {
+                // throw new \Exception('controller is invalid');
+            // }
+            // if (empty($params[3])) {
+                // throw new \Exception('action is invalid');
+            // }
+            // $this->_module = $params[1];
+            // $this->_controller = $params[2];
+            // $this->_action = $params[3];
 
-            return;
-        }
+            // return;
+        /* } */
         // remove all after ? for getting module, controller and action
         // 去掉问号后的参数 保证获取到准确的module、controller 和 action
         $requestURI = preg_replace('|\?.*$|', '', $_SERVER['REQUEST_URI']);
